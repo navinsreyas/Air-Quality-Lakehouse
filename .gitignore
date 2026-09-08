@@ -1,6 +1,5 @@
-*.csv
-*.json
 __pycache__/
 .ipynb_checkpoints/
 .env
 .conda/
+*.csv
