@@ -4,7 +4,7 @@ A Databricks lakehouse over **3,998,208 hourly air quality readings** from 24 Sy
 
 Built on Databricks Free Edition. Non-commercial, not a production deployment.
 
-**Stack:** Databricks · PySpark · Spark SQL · Delta Lake · Unity Catalog · Databricks Jobs · MLflow
+**Stack:** Databricks · PySpark · Spark SQL · Delta Lake · Unity Catalog · Databricks Jobs · MLflow · Databricks SQL · Power BI
 
 ---
 
@@ -411,6 +411,38 @@ The morning peak is 2.5 times the early-afternoon minimum. The shape matches the
 
 This profile also served as an independent verification of the timestamp handling in finding 5. A one-hour offset error would have shifted the entire curve, and the physics would no longer line up.
 
+## Dashboard and BI
+
+A Databricks AI/BI dashboard over the gold layer, driven by a single pollutant
+parameter shared across all views.
+
+![Dashboard](docs/images/dashboard_full.png)
+
+![Regional trend](docs/images/dashboard_regional_trend.png)
+
+*Monthly mean by region. The January 2020 spike is the Black Summer bushfire smoke.*
+
+![NO2 diurnal profile](docs/images/dashboard_no2_diurnal.png)
+
+*NO2 by hour of day. The morning and evening peaks are the traffic signature, and
+they independently confirm the 1-based hour correction from finding 5.*
+
+![January 2020](docs/images/dashboard_baseline_adaptation.png)
+
+*Network mean PM2.5 against stations flagged as anomalous. By mid-January the
+seven-day baseline had absorbed the smoke, and a day averaging 47.1 µg/m³
+produced no flags at all.*
+
+The gold layer is also connected to Power BI Desktop over **DirectQuery** rather
+than an imported extract, so slicer interactions issue live queries against the
+Databricks SQL warehouse.
+
+![Power BI report](docs/images/powerbi_report.png)
+
+![Query history](docs/images/powerbi_query_history.png)
+
+*A Power BI slicer change appearing in Databricks Query History, confirming the
+connection is live rather than a cached copy.*
 ---
 
 ## Repository structure
@@ -445,8 +477,6 @@ README.md
 | 12.28% of readings null | Station downtime and instruments not present at every site |
 | Flatline detection returns nothing usable | See finding 11. The zero result is real, but at a six-hour threshold only |
 | No weather covariates | Year-to-year variation cannot be separated from meteorology |
-| No dashboard yet | Gold tables are modelled for BI consumption; the serving layer is in progress |
-
 ---
 
 ## Running it
