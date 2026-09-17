@@ -1,0 +1,187 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 1630" width="1040" height="1630" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4B4F54"/>
+    </marker>
+    <marker id="arrowMuted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8A8A8A"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4C71A8"/>
+    </marker>
+    <marker id="arrowSm" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4B4F54"/>
+    </marker>
+  </defs>
+
+  <!-- background -->
+  <rect x="0" y="0" width="1040" height="1630" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="520" y="45" text-anchor="middle" font-size="22" font-weight="700" fill="#1F2328">NSW Air Quality Lakehouse — Architecture</text>
+  <text x="520" y="68" text-anchor="middle" font-size="12" font-style="italic" fill="#6B6E73">Batch ingestion &#8594; Lakeflow Declarative Pipelines &#8594; analytics &#183; Databricks Free Edition</text>
+
+  <!-- ============ SOURCE ============ -->
+  <rect x="40" y="90" width="960" height="100" rx="10" fill="#F6F4F0" stroke="#9C9488" stroke-width="1.75"/>
+  <text x="60" y="112" font-size="11" font-weight="700" letter-spacing="1" fill="#6E6558">SOURCE</text>
+  <text x="60" y="134" font-size="16" font-weight="700" fill="#2B2822">NSW DCCEEW Air Quality REST API</text>
+  <text x="60" y="155" font-size="13" fill="#3A3F44">2020&#8211;2025  &#183;  24 physical monitoring stations  &#183;  9 parameters</text>
+  <text x="60" y="174" font-size="12.5" fill="#3A3F44">Pollutants: PM2.5 &#183; PM10 &#183; NO2 &#183; OZONE&#160;&#160;&#160;&#160;|&#160;&#160;&#160;&#160;Weather: TEMP &#183; HUMID &#183; WSP &#183; WDR &#183; RAIN</text>
+
+  <line x1="520" y1="190" x2="520" y2="215" stroke="#4B4F54" stroke-width="2.25" marker-end="url(#arrow)"/>
+
+  <!-- ============ RAW INGESTION ============ -->
+  <rect x="40" y="215" width="960" height="105" rx="10" fill="#F6F4F0" stroke="#9C9488" stroke-width="1.75"/>
+  <text x="60" y="237" font-size="11" font-weight="700" letter-spacing="1" fill="#6E6558">RAW INGESTION</text>
+  <text x="60" y="259" font-size="15.5" font-weight="700" fill="#2B2822">Unity Catalog Volume &#8212; /Volumes/workspace/aq_bronze/raw</text>
+  <text x="60" y="281" font-size="13" fill="#3A3F44">1,296 raw JSON files &#8212; 576 pollutant + 720 weather</text>
+  <text x="60" y="301" font-size="12.5" fill="#3A3F44">Weather ingestion: 720 requests &#183; 0 failed &#183; 192 returned no observations</text>
+
+  <line x1="520" y1="320" x2="520" y2="345" stroke="#4B4F54" stroke-width="2.25" marker-end="url(#arrow)"/>
+
+  <!-- ============ BRONZE ============ -->
+  <rect x="40" y="345" width="960" height="95" rx="10" fill="#F3E3D2" stroke="#B3763F" stroke-width="1.75"/>
+  <text x="60" y="367" font-size="11" font-weight="700" letter-spacing="1" fill="#8A5A2A">BRONZE</text>
+  <text x="60" y="389" font-size="16" font-weight="700" fill="#4A2E12">Auto Loader &#8212; incremental JSON ingestion</text>
+  <text x="60" y="410" font-size="13" fill="#3A2E22">workspace.aq_dlt.bronze_observations   &#183;   8,627,712 rows</text>
+  <text x="60" y="429" font-size="12" fill="#3A2E22">Streaming table &#183; source-file provenance &#183; ingestion timestamp &#183; rescued data / schema evolution</text>
+
+  <line x1="520" y1="440" x2="520" y2="465" stroke="#4B4F54" stroke-width="2.25" marker-end="url(#arrow)"/>
+
+  <!-- ============ SILVER ============ -->
+  <rect x="40" y="465" width="960" height="105" rx="10" fill="#EAEAEC" stroke="#8C9096" stroke-width="1.75"/>
+  <text x="60" y="487" font-size="11" font-weight="700" letter-spacing="1" fill="#5A5E63">SILVER</text>
+  <text x="60" y="509" font-size="16" font-weight="700" fill="#2A2C2E">Lakeflow Declarative Pipelines &#8212; expectations</text>
+  <text x="60" y="530" font-size="13" fill="#3A3F44">workspace.aq_dlt.silver_observations   &#183;   7,568,891 rows</text>
+  <text x="60" y="549" font-size="12.5" fill="#3A3F44">Rejected: 1,058,821 (12.27%)  &#183;  Validated + parameter-aware cleaning</text>
+
+  <!-- Silver fans out to the three Gold tables -->
+  <line x1="190" y1="570" x2="190" y2="675" stroke="#4B4F54" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="520" y1="570" x2="520" y2="675" stroke="#4B4F54" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="850" y1="570" x2="850" y2="675" stroke="#4B4F54" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ REFERENCE: dim_station ============ -->
+  <rect x="275" y="585" width="190" height="62" rx="8" fill="#EFEFF3" stroke="#7E7FA0" stroke-width="1.5"/>
+  <text x="290" y="603" font-size="9.5" font-weight="700" letter-spacing="0.5" fill="#4E4F70">REFERENCE (Delta)</text>
+  <text x="290" y="621" font-size="11.5" font-weight="700" fill="#2B2B3D">aq_silver.dim_station</text>
+  <text x="290" y="638" font-size="10.5" fill="#3A3F44">24 physical stations</text>
+
+  <!-- dim_station feeds only the two aggregate Gold tables, not hourly_wide -->
+  <line x1="320" y1="647" x2="295" y2="673" stroke="#4B4F54" stroke-width="1.75" marker-end="url(#arrowSm)"/>
+  <line x1="420" y1="647" x2="415" y2="673" stroke="#4B4F54" stroke-width="1.75" marker-end="url(#arrowSm)"/>
+
+  <!-- ============ GOLD ROW ============ -->
+  <!-- Box 1: gold_daily_site_summary -->
+  <rect x="40" y="675" width="300" height="190" rx="10" fill="#FBF1D6" stroke="#C39A32" stroke-width="1.75"/>
+  <text x="60" y="697" font-size="11" font-weight="700" letter-spacing="1" fill="#8C6A17">GOLD</text>
+  <text x="60" y="719" font-size="14.5" font-weight="700" fill="#4A3A0D">gold_daily_site_summary</text>
+  <text x="60" y="739" font-size="13" fill="#3A3F44">152,176 rows</text>
+  <text x="60" y="757" font-size="12" fill="#3A3F44">Grain: station &#215; date &#215; pollutant</text>
+  <text x="60" y="775" font-size="12" fill="#3A3F44">Daily pollutant statistics</text>
+  <text x="60" y="793" font-size="12" fill="#3A3F44">+ completeness</text>
+
+  <!-- Box 2: gold_regional_trend -->
+  <rect x="370" y="675" width="300" height="190" rx="10" fill="#FBF1D6" stroke="#C39A32" stroke-width="1.75"/>
+  <text x="390" y="697" font-size="11" font-weight="700" letter-spacing="1" fill="#8C6A17">GOLD</text>
+  <text x="390" y="719" font-size="14.5" font-weight="700" fill="#4A3A0D">gold_regional_trend</text>
+  <text x="390" y="739" font-size="13" fill="#3A3F44">864 rows</text>
+  <text x="390" y="757" font-size="12" fill="#3A3F44">Monthly regional trends</text>
+  <text x="390" y="775" font-size="12" fill="#3A3F44">12-month rolling average</text>
+  <text x="390" y="793" font-size="12" fill="#3A3F44">YoY comparison</text>
+
+  <!-- Box 3: hourly_wide -->
+  <rect x="700" y="675" width="300" height="190" rx="10" fill="#FBF1D6" stroke="#C39A32" stroke-width="1.75"/>
+  <text x="720" y="697" font-size="11" font-weight="700" letter-spacing="1" fill="#8C6A17">GOLD</text>
+  <text x="720" y="719" font-size="14.5" font-weight="700" fill="#4A3A0D">aq_gold.hourly_wide</text>
+  <text x="720" y="739" font-size="13" fill="#3A3F44">924,503 rows</text>
+  <text x="720" y="757" font-size="12" fill="#3A3F44">Grain: site_id + obs_time</text>
+  <text x="720" y="775" font-size="12" fill="#3A3F44">Pollution + weather aligned</text>
+  <text x="720" y="793" font-size="12" fill="#3A3F44">at station-hour grain</text>
+  <text x="720" y="815" font-size="10.5" font-style="italic" fill="#6B5A22">PM2.5 + wind paired: 817,896 (92.54%)</text>
+
+  <!-- Gold -> Serving / downstream analysis -->
+  <line x1="190" y1="865" x2="190" y2="895" stroke="#4B4F54" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="520" y1="865" x2="520" y2="895" stroke="#4B4F54" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="850" y1="865" x2="850" y2="895" stroke="#4B4F54" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ SERVING + DOWNSTREAM ANALYSIS ROW ============ -->
+  <!-- Databricks SQL Dashboard -->
+  <rect x="40" y="895" width="300" height="135" rx="10" fill="#F7F7F5" stroke="#9A9A9A" stroke-width="1.75"/>
+  <text x="60" y="917" font-size="11" font-weight="700" letter-spacing="1" fill="#5C5C5C">SERVING</text>
+  <text x="60" y="939" font-size="14" font-weight="700" fill="#2B2822">Databricks SQL Dashboard</text>
+  <text x="60" y="961" font-size="12" fill="#3A3F44">Built on the Gold layer</text>
+  <text x="60" y="979" font-size="12" fill="#3A3F44">(AI/BI dashboard)</text>
+
+  <!-- Power BI DirectQuery -->
+  <rect x="370" y="895" width="300" height="135" rx="10" fill="#F7F7F5" stroke="#9A9A9A" stroke-width="1.75"/>
+  <text x="390" y="917" font-size="11" font-weight="700" letter-spacing="1" fill="#5C5C5C">SERVING</text>
+  <text x="390" y="939" font-size="14" font-weight="700" fill="#2B2822">Power BI &#8212; DirectQuery</text>
+  <text x="390" y="961" font-size="12" fill="#3A3F44">Live queries against the</text>
+  <text x="390" y="979" font-size="12" fill="#3A3F44">Databricks SQL Warehouse</text>
+
+  <!-- 2022 Weather Investigation -->
+  <rect x="700" y="895" width="300" height="135" rx="10" fill="#F7F7F5" stroke="#9A9A9A" stroke-width="1.75"/>
+  <text x="720" y="917" font-size="10.5" font-weight="700" letter-spacing="1" fill="#5C5C5C">DOWNSTREAM ANALYSIS</text>
+  <text x="720" y="939" font-size="14" font-weight="700" fill="#2B2822">2022 Weather Investigation</text>
+  <text x="720" y="960" font-size="11.5" fill="#3A3F44">Rain vs dry &#183; Wind bands</text>
+  <text x="720" y="977" font-size="11.5" fill="#3A3F44">Correlations &#183; Coverage audit</text>
+  <text x="720" y="996" font-size="10" font-style="italic" fill="#6B6E73">Weather is a plausible contributor;</text>
+  <text x="720" y="1010" font-size="10" font-style="italic" fill="#6B6E73">no causal attribution</text>
+
+  <!-- Silver -> MLflow, routed via the right margin (kept out of the main flow) -->
+  <path d="M 1000,517 L 1020,517 L 1020,1115 L 1000,1115" fill="none" stroke="#8A8A8A" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrowMuted)"/>
+
+  <!-- ============ MLflow (separate from ingestion) ============ -->
+  <rect x="700" y="1060" width="300" height="110" rx="10" fill="#F7F7F5" stroke="#9A9A9A" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="720" y="1082" font-size="10.5" font-weight="700" letter-spacing="1" fill="#5C5C5C">EXPERIMENT TRACKING</text>
+  <text x="720" y="1104" font-size="14" font-weight="700" fill="#2B2822">MLflow</text>
+  <text x="720" y="1124" font-size="12" fill="#3A3F44">Parameter sweep &#8212;</text>
+  <text x="720" y="1140" font-size="12" fill="#3A3F44">anomaly-detection thresholds</text>
+  <text x="720" y="1158" font-size="10.5" font-style="italic" fill="#6B6E73">Separate from ingestion</text>
+
+  <!-- ============ UNITY CATALOG GOVERNANCE (band) ============ -->
+  <rect x="40" y="1210" width="960" height="150" rx="12" fill="#E7EEF6" stroke="#4C71A8" stroke-width="1.75"/>
+  <text x="60" y="1245" font-size="16" font-weight="700" fill="#1C2E49">UNITY CATALOG GOVERNANCE</text>
+  <text x="60" y="1265" font-size="11" font-style="italic" fill="#3D5A82">Applied across Bronze &#8594; Silver &#8594; Gold</text>
+
+  <rect x="60" y="1285" width="200" height="45" rx="8" fill="#FFFFFF" stroke="#4C71A8" stroke-width="1.25"/>
+  <text x="160" y="1312" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2E49">SELECT grants</text>
+
+  <rect x="280" y="1285" width="200" height="45" rx="8" fill="#FFFFFF" stroke="#4C71A8" stroke-width="1.25"/>
+  <text x="380" y="1312" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2E49">Table tags</text>
+
+  <rect x="500" y="1285" width="200" height="45" rx="8" fill="#FFFFFF" stroke="#4C71A8" stroke-width="1.25"/>
+  <text x="600" y="1312" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2E49">Column comments</text>
+
+  <rect x="720" y="1285" width="200" height="45" rx="8" fill="#FFFFFF" stroke="#4C71A8" stroke-width="1.25"/>
+  <text x="820" y="1312" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2E49">Lineage</text>
+
+  <!-- ============ DATABRICKS JOB (band) ============ -->
+  <rect x="40" y="1385" width="960" height="190" rx="12" fill="#E7EEF6" stroke="#4C71A8" stroke-width="1.75"/>
+  <text x="60" y="1415" font-size="16" font-weight="700" fill="#1C2E49">DATABRICKS JOB &#8212; nsw_air_quality_pipeline</text>
+  <text x="60" y="1435" font-size="11" font-style="italic" fill="#3D5A82">Single job run &#183; all tasks succeeded</text>
+
+  <rect x="60" y="1455" width="190" height="80" rx="8" fill="#FFFFFF" stroke="#4C71A8" stroke-width="1.25"/>
+  <text x="155" y="1500" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2E49">run_pipeline</text>
+
+  <line x1="250" y1="1495" x2="290" y2="1495" stroke="#4C71A8" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <rect x="290" y="1455" width="190" height="80" rx="8" fill="#FFFFFF" stroke="#4C71A8" stroke-width="1.25"/>
+  <text x="385" y="1500" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2E49">quality_check</text>
+
+  <line x1="480" y1="1495" x2="520" y2="1495" stroke="#4C71A8" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <rect x="520" y="1455" width="190" height="80" rx="8" fill="#FFFFFF" stroke="#4C71A8" stroke-width="1.25"/>
+  <text x="615" y="1500" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1C2E49">build_remaining_gold</text>
+
+  <line x1="710" y1="1495" x2="750" y2="1495" stroke="#4C71A8" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <rect x="750" y="1455" width="190" height="80" rx="8" fill="#FFFFFF" stroke="#4C71A8" stroke-width="1.25"/>
+  <text x="845" y="1492" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2E49">run_tests</text>
+  <text x="845" y="1512" text-anchor="middle" font-size="10.5" font-style="italic" fill="#3D5A82">6 regression tests</text>
+
+  <text x="60" y="1558" font-size="12" fill="#1C2E49">&#10003; All four tasks completed in one green run</text>
+
+  <!-- ============ FOOTER ============ -->
+  <text x="520" y="1600" text-anchor="middle" font-size="11.5" font-style="italic" fill="#6B6E73">Serverless compute &#183; Batch ingestion, not streaming &#183; Non-commercial project, not a production deployment</text>
+</svg>

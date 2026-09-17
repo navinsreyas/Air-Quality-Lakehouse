@@ -1,0 +1,666 @@
+{
+  "datasets": [
+    {
+      "name": "7b771bb4",
+      "displayName": "regional_trend",
+      "queryLines": [
+        "SELECT region, month_start, monthly_avg, rolling_12m\r\n",
+        "FROM workspace.aq_gold.regional_trend\r\n",
+        "WHERE parameter_code = :pollutant\r\n",
+        "ORDER BY month_start "
+      ],
+      "parameters": [
+        {
+          "displayName": "pollutant",
+          "keyword": "pollutant",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "PM2.5"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7f27bbc9",
+      "displayName": "station_map",
+      "queryLines": [
+        "SELECT site_name, region, latitude, longitude,\r\n",
+        "       ROUND(AVG(daily_avg), 2) AS annual_avg\r\n",
+        "FROM workspace.aq_gold.daily_site_summary\r\n",
+        "WHERE parameter_code = :pollutant\r\n",
+        "  AND year(obs_date) = 2024\r\n",
+        "GROUP BY 1, 2, 3, 4"
+      ],
+      "parameters": [
+        {
+          "displayName": "pollutant",
+          "keyword": "pollutant",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "PM2.5"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "0b33deab",
+      "displayName": "exceedance_by_year",
+      "queryLines": [
+        "SELECT year(obs_date) AS yr, parameter_code, count(*) AS exceedance_days\r\n",
+        "FROM workspace.aq_gold.exceedance_events\r\n",
+        "GROUP BY 1, 2\r\n",
+        "ORDER BY 1"
+      ]
+    },
+    {
+      "name": "7a3c0113",
+      "displayName": "diurnal_profile",
+      "queryLines": [
+        "SELECT site_name, obs_hour, mean_value\r\n",
+        "FROM workspace.aq_gold.site_hourly_profile\r\n",
+        "WHERE parameter_code = :pollutant\r\n",
+        "  AND region = 'Sydney East'\r\n",
+        "ORDER BY site_name, obs_hour"
+      ],
+      "parameters": [
+        {
+          "displayName": "pollutant",
+          "keyword": "pollutant",
+          "dataType": "STRING",
+          "defaultSelection": {
+            "values": {
+              "dataType": "STRING",
+              "values": [
+                {
+                  "value": "PM2.5"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "d4cf25ac",
+      "displayName": "completeness",
+      "queryLines": [
+        "SELECT ROUND(100.0 * (SELECT count(*) FROM workspace.aq_silver.fact_observation)\r\n",
+        "                   / (SELECT count(*) FROM workspace.aq_bronze.observations), 2) AS pct_retained"
+      ]
+    },
+    {
+      "name": "49db748e",
+      "displayName": "fault_vs_event",
+      "queryLines": [
+        "SELECT event_class, count(*) AS hours\r\n",
+        "FROM workspace.aq_gold.hourly_classification\r\n",
+        "WHERE event_class NOT IN ('quiet', 'insufficient_network')\r\n",
+        "GROUP BY 1\r\n",
+        "ORDER BY 2 DESC"
+      ]
+    },
+    {
+      "name": "278cfd48",
+      "displayName": "jan2020_adaptation",
+      "queryLines": [
+        "SELECT DATE_TRUNC('DAY', obs_time) AS day,\r\n",
+        "       ROUND(AVG(network_mean), 1) AS mean_pm25,\r\n",
+        "       MAX(stations_anomalous)     AS stations_flagged\r\n",
+        "FROM workspace.aq_gold.hourly_network_state\r\n",
+        "WHERE parameter_code = 'PM2.5'\r\n",
+        "  AND obs_time >= '2020-01-01' AND obs_time < '2020-02-01'\r\n",
+        "GROUP BY 1 ORDER BY 1"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "6572eb97",
+      "displayName": "Overview",
+      "layout": [
+        {
+          "widget": {
+            "name": "exceedance-days-by-year",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "0b33deab",
+                  "fields": [
+                    {
+                      "name": "parameter_code",
+                      "expression": "`parameter_code`"
+                    },
+                    {
+                      "name": "yr",
+                      "expression": "`yr`"
+                    },
+                    {
+                      "name": "sum(exceedance_days)",
+                      "expression": "SUM(`exceedance_days`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "<span style=\"text-align:center;display:block;\">Exceedance days by year</span>",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "yr",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(exceedance_days)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "parameter_code",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 1,
+            "y": 7,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "regional-trend1",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "7b771bb4",
+                  "fields": [
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    },
+                    {
+                      "name": "monthly(month_start)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `month_start`)"
+                    },
+                    {
+                      "name": "sum(monthly_avg)",
+                      "expression": "SUM(`monthly_avg`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "showDescription": false,
+                "title": {
+                  "value": "<span style=\"text-align:center;display:block;\">Regional trend</span>",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(month_start)",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(monthly_avg)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "region",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 12,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "station-locations-annual-average",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "7f27bbc9",
+                  "fields": [
+                    {
+                      "name": "annual_avg",
+                      "expression": "`annual_avg`"
+                    },
+                    {
+                      "name": "longitude",
+                      "expression": "`longitude`"
+                    },
+                    {
+                      "name": "latitude",
+                      "expression": "`latitude`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "<span style=\"text-align:center;display:block;\">Station locations by annual average</span>",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "longitude",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "latitude",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "annual_avg",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 7,
+            "y": 6,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "avg-by-hour-of-day",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "7a3c0113",
+                  "fields": [
+                    {
+                      "name": "site_name",
+                      "expression": "`site_name`"
+                    },
+                    {
+                      "name": "obs_hour",
+                      "expression": "`obs_hour`"
+                    },
+                    {
+                      "name": "sum(mean_value)",
+                      "expression": "SUM(`mean_value`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "<span style=\"text-align:center;display:block;\">Average by hour of day</span>",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "obs_hour",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(mean_value)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "site_name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 6,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "regional-trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "278cfd48",
+                  "fields": [
+                    {
+                      "name": "day",
+                      "expression": "`day`"
+                    },
+                    {
+                      "name": "avg(mean_pm25)",
+                      "expression": "AVG(`mean_pm25`)"
+                    },
+                    {
+                      "name": "avg(stations_flagged)",
+                      "expression": "AVG(`stations_flagged`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "January 2020: concentration vs stations flagged",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "day",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fields": [
+                    {
+                      "fieldName": "avg(mean_pm25)"
+                    },
+                    {
+                      "fieldName": "avg(stations_flagged)"
+                    }
+                  ]
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 1,
+            "y": 1,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "sensor-faults-regional-events",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "49db748e",
+                  "fields": [
+                    {
+                      "name": "event_class",
+                      "expression": "`event_class`"
+                    },
+                    {
+                      "name": "sum(hours)",
+                      "expression": "SUM(`hours`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "\tSensor faults vs regional events",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "event_class",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(hours)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 1,
+            "y": 13,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "readings-retained-percentage",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "d4cf25ac",
+                  "fields": [
+                    {
+                      "name": "sum(pct_retained)",
+                      "expression": "SUM(`pct_retained`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "# <span style=\"text-align:center;display:block\">Readings retained (%)</span>",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(pct_retained)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "b111d259",
+            "queries": [
+              {
+                "name": "parameter_dashboards/01f1ac47a7661729a230f90d2096c312/datasets/01f1ac47e6d81778a3bec069605f4d2c_pollutant",
+                "query": {
+                  "datasetName": "7b771bb4",
+                  "parameters": [
+                    {
+                      "name": "pollutant",
+                      "keyword": "pollutant"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "parameter_dashboards/01f1ac47a7661729a230f90d2096c312/datasets/01f1ac48db1017d495034687e343418e_pollutant",
+                "query": {
+                  "datasetName": "7f27bbc9",
+                  "parameters": [
+                    {
+                      "name": "pollutant",
+                      "keyword": "pollutant"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "parameter_dashboards/01f1ac47a7661729a230f90d2096c312/datasets/01f1ac4962bd16cda7d9f66e339c1919_pollutant",
+                "query": {
+                  "datasetName": "7a3c0113",
+                  "parameters": [
+                    {
+                      "name": "pollutant",
+                      "keyword": "pollutant"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "parameterName": "pollutant",
+                    "queryName": "parameter_dashboards/01f1ac47a7661729a230f90d2096c312/datasets/01f1ac47e6d81778a3bec069605f4d2c_pollutant"
+                  },
+                  {
+                    "parameterName": "pollutant",
+                    "queryName": "parameter_dashboards/01f1ac47a7661729a230f90d2096c312/datasets/01f1ac48db1017d495034687e343418e_pollutant"
+                  },
+                  {
+                    "parameterName": "pollutant",
+                    "queryName": "parameter_dashboards/01f1ac47a7661729a230f90d2096c312/datasets/01f1ac4962bd16cda7d9f66e339c1919_pollutant"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 1,
+            "y": 0,
+            "width": 3,
+            "height": 1
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
